@@ -227,42 +227,76 @@ b_type = ['beq','bne','blt','bge','bltu','bgeu']
 u_type = ['lui','auipc']
 j_type = ['jal']
 
-output_code=[]
-instructions = []
 
+def parse_label(instruction, label_dict, current):
+    if ':' in instruction:
+        label, _ = instruction.split(':')
+        label_dict[label.strip()] = current
+        return label.strip()
+    return None
+
+def resolve_labels(instruction, label_dict):
+    resolved = []
+    for part in instruction:
+        if part.isdigit() or part.startswith('-'):
+            resolved.append(part)
+        elif part in label_dict:
+            resolved.append(str(label_dict[part]))
+        else:
+            resolved.append(part)
+    return resolved
+
+label_dict = {}
+address = 0
+
+# to parse labels and store their addresses
+with open('input.txt', 'r') as f:
+    for line in f:
+        line = line.strip()
+        if line:
+            label = parse_label(line, label_dict, address)
+            if label:
+                line = line.replace(label + ':', '') 
+            if not parse_label(line, label_dict, address):
+                address += 1
+
+output_code = []
+
+# process instructions
 import re
 with open('input.txt', 'r') as f:
     for line in f:
         line = line.strip()
         if line:
-            line = line.replace('start:', '').replace('end:', '')
-            parts = re.split(r'[,\s()]', line)
-            parts = [part for part in parts if part.strip()]
-            instructions.append(parts)
+            instruction = re.split(r'[\s,()]', line)
+            instruction = [part.strip() for part in instruction if part.strip()]
+            instruction = resolve_labels(instruction, label_dict)
 
-for i in instructions:
-    if i[0] in r_type:
-        res = r_instruction(i)
-        output_code.append(res)
-    elif i[0] in i_type:
-        res = i_instruction(i)
-        output_code.append(res)
-    elif i[0] in s_type:
-        res = s_instruction(i)
-        output_code.append(res)
-    elif i[0] in b_type:
-        res = b_instruction(i)
-        output_code.append(res)
-    elif i[0] in u_type:
-        res = u_instruction(i)
-        output_code.append(res)
-    elif i[0] in j_type:
-        res = j_instruction(i)
-        output_code.append(res)
-    else:
-        s="Invalid instruction"
-        output_code.append(s)
+            for i in instruction:
+                if ':' in i:
+                    instruction.pop(0)
 
+            if instruction[0] in r_type:
+                res = r_instruction(instruction)
+                output_code.append(res)
+            elif instruction[0] in i_type:
+                res = i_instruction(instruction)
+                output_code.append(res)
+            elif instruction[0] in s_type:
+                res = s_instruction(instruction)
+                output_code.append(res)
+            elif instruction[0] in b_type:
+                res = b_instruction(instruction)
+                output_code.append(res)
+            elif instruction[0] in u_type:
+                res = u_instruction(instruction)
+                output_code.append(res)
+            elif instruction[0] in j_type:
+                res = j_instruction(instruction)
+                output_code.append(res)
+            else:
+                s = "Invalid instruction"
+                output_code.append(s)
 
 with open("output.txt", 'w') as f:
     for k in output_code:
