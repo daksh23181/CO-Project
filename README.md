@@ -1,1 +1,1 @@
-Hii, My name is Daksh Singh. So, I have designed a assembler here.
+Hii, My name is Daksh Singh. So, I have designed a RISC-V Assembler and Simulator here.
