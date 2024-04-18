@@ -348,7 +348,8 @@ def execute_J_type(instruction):
     # jal
     global PC
 
-    imm = instruction[0] + instruction[10:20] + instruction[9] + instruction[1:9] + '0'
+    i = instruction[:20]
+    imm = i[0] + i[10:20] + i[9] + i[1:9] + '0'
     x = Convert_2scomplement(imm)
     rd = instruction[20:25]
     register_value[register_decode[rd]] = Convert_Binary32(PC + 4)
